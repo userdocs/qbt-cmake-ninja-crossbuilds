@@ -1,6 +1,6 @@
 name: qbt cmake ninja crossbuild package release
 on:
-  - workflow_dispatch
+  workflow_dispatch:
 
 jobs:
   build:
@@ -198,12 +198,12 @@ jobs:
       - name: Host - Set cmake version to variable
         run: |
           cmake_version="$(<cmake.version)"
-          echo "cmake_version=${cmake_version}" >> $GITHUB_ENV
+          echo "cmake_version=${cmake_version%%-*}" >> $GITHUB_ENV
 
       - name: Host - Set ninja version to variable
         run: |
           ninja_version="$(<ninja.version)"
-          echo "ninja_version=${ninja_version}" >> $GITHUB_ENV
+          echo "ninja_version=${ninja_version%\.git}" >> $GITHUB_ENV
 
       - name: Docker - archive ${{ matrix.arch_type}} cmake and ninja
         run: docker exec -w /root multiarch tar -czvf ${{ matrix.os_id }}-${{ matrix.os_version_id }}-${{ matrix.name }}-${{ matrix.arch }}.tar.gz build/
