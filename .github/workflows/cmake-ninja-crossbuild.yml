@@ -209,7 +209,7 @@ jobs:
         run: docker exec -w /root multiarch tar -czvf ${{ matrix.os_id }}-${{ matrix.os_version_id }}-${{ matrix.name }}-${{ matrix.arch }}.tar.gz build/
 
       - name: Host - "Create release - tag - assets"
-        uses: ncipollo/release-action@v1.11.0
+        uses: ncipollo/release-action@v1.11.1
         with:
           prerelease: ${{ env.prerelease }}
           artifacts: "${{ matrix.os_id }}-${{ matrix.os_version_id }}-${{ matrix.name }}-${{ matrix.arch }}.tar.gz"
