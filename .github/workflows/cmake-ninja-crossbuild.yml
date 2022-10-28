@@ -92,9 +92,9 @@ jobs:
           docker exec --env-file env.custom multiarch /bin/bash -c 'echo en_US.UTF-8 UTF-8 >> /etc/locale.gen'
           docker exec --env-file env.custom multiarch /bin/bash -c 'echo LANG=en_US.UTF-8 > /etc/locale.conf'
 
-      - name: Docker target - fix Debian armel sources
+      - name: Docker target - fix Debian buster armel sources
         if: |
-          matrix.os_id == 'os_version_id' && matrix.arch == 'armel'
+          matrix.os_version_id == 'buster' && matrix.arch == 'armel'
         run: |
           docker exec --env-file env.custom -w /etc/apt/ multiarch  bash -c 'echo "deb [arch=${{ matrix.arch }}] https://deb.debian.org/debian buster-proposed-updates main" >> sources.list'
 
