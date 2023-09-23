@@ -8,11 +8,11 @@ on:
         required: true
         type: boolean
       retries:
-        description: 'Number of rerun retries'
+        description: "Number of rerun retries"
         required: true
-        default: '5'
+        default: "1"
         type: choice
-        options: [ "1", "2", "3", "4", "5", "6", "7", "8", "9" ]
+        options: ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -32,8 +32,8 @@ jobs:
       matrix:
         name: [cmake]
         os_id: [debian, ubuntu]
-        os_codename: [bullseye, focal, jammy]
-        arch: [amd64, armel, armhf, arm64]
+        os_codename: [bullseye, bookworm, focal, jammy]
+        arch: [amd64, armhf, arm64]
         exclude:
           - os_id: debian
             os_codename: focal
@@ -42,7 +42,7 @@ jobs:
           - os_id: ubuntu
             os_codename: bullseye
           - os_id: ubuntu
-            arch: armel
+            os_codename: bookworm
 
     name: ${{ matrix.os_id }}:${{ matrix.os_codename }} ${{ matrix.name }} ${{ matrix.arch }}
 
