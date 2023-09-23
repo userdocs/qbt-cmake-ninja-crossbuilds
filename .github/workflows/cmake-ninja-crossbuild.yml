@@ -106,6 +106,7 @@ jobs:
         run: docker exec -w /home/github/cmake multiarch ./configure --parallel=$(nproc) --no-system-libs --enable-ccache --prefix=/home/github/build
 
       - name: Docker - logs
+        if: failure()
         run: docker exec -w /home/github/cmake multiarch cat Bootstrap.cmk/cmake_bootstrap.log
 
       - name: Docker - Make build cmake
