@@ -72,7 +72,7 @@ jobs:
         run: printf '%s\n' "ninja_github_tag=$(git ls-remote -q -t --refs https://github.com/ninja-build/ninja.git | awk '/v/{sub("refs/tags/", ""); print $2 }' | awk '!/^$/' | sort -rV | head -n 1)" >> $GITHUB_ENV
 
       - name: Host - Git clone cmake
-        run: git clone --single-branch --branch ${{ env.cmake_github_tag }} --shallow-submodules --recurse-submodules --depth 1 https://github.com/Kitware/CMake.git cmake
+        run: git clone --single-branch --branch ${cmake_github_tag} --shallow-submodules --recurse-submodules --depth 1 https://github.com/Kitware/CMake.git cmake
 
       - name: Docker - Configure cmake
         run: docker exec -u github:github -w /home/github/cmake multiarch ./configure --parallel=$(nproc) --no-system-libs --enable-ccache --prefix=/home/github/build
@@ -84,13 +84,13 @@ jobs:
         run: docker exec -u github:github -w /home/github/cmake multiarch make install
 
       - name: Host - Git clone ninja
-        run: git clone --single-branch --branch ${{ env.ninja_github_tag }} --shallow-submodules --recurse-submodules --depth 1 https://github.com/ninja-build/ninja.git ninja
+        run: git clone --single-branch --branch ${ninja_github_tag} --shallow-submodules --recurse-submodules --depth 1 https://github.com/ninja-build/ninja.git ninja
 
       - name: Docker - Configure ninja
         run: >
           docker exec -u github:github -w /home/github/ninja multiarch /home/github/build/bin/cmake -B build
           -D CMAKE_BUILD_TYPE="release"
-          -D CMAKE_CXX_STANDARD="${{ env.cxx_standard }}"
+          -D CMAKE_CXX_STANDARD="${cxx_standard}"
           -D CMAKE_INSTALL_PREFIX="/home/github/build"
           -D BUILD_TESTING=off
 
