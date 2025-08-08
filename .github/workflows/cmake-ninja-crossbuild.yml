@@ -55,7 +55,7 @@ jobs:
       contents: read
     steps:
       - name: Host - Checkout action
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           persist-credentials: false
 
@@ -121,7 +121,7 @@ jobs:
         run: tar cJvf ${{ matrix.os_id }}-${{ matrix.os_codename }}-${{ matrix.name }}-${{ matrix.arch }}.tar.xz build/
 
       - name: Host - upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: "${{ matrix.os_id }}-${{ matrix.os_codename }}-${{ matrix.name }}-${{ matrix.arch }}-tar-xz"
           path: "${{ matrix.os_id }}-${{ matrix.os_codename }}-${{ matrix.name }}-${{ matrix.arch }}.tar.xz"
@@ -140,12 +140,12 @@ jobs:
       contents: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           persist-credentials: false
 
       - name: Host - Download artifacts
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
 
       - name: Host - artifacts organise for release
         run: |
@@ -155,7 +155,7 @@ jobs:
           done
 
       - name: Host - "Create release - tag - assets"
-        uses: ncipollo/release-action@v1
+        uses: ncipollo/release-action@bcfe5470707e8832e12347755757cec0eb3c22af # v1
         with:
           prerelease: false
           artifacts: releases/*.xz
@@ -180,7 +180,7 @@ jobs:
       retries: ${{ github.event.inputs.retries || '1' }}
       distinct_id: ${{ github.event.inputs.distinct_id }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           persist-credentials: false
       - name: ci-auto-rerun-failed-jobs via ${{ env.github_repo || github.repository }}
