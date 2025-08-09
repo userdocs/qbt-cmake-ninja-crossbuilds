@@ -121,7 +121,7 @@ jobs:
         run: tar cJvf ${{ matrix.os_id }}-${{ matrix.os_codename }}-${{ matrix.name }}-${{ matrix.arch }}.tar.xz build/
 
       - name: Host - upload artifacts
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: "${{ matrix.os_id }}-${{ matrix.os_codename }}-${{ matrix.name }}-${{ matrix.arch }}-tar-xz"
           path: "${{ matrix.os_id }}-${{ matrix.os_codename }}-${{ matrix.name }}-${{ matrix.arch }}.tar.xz"
@@ -155,7 +155,7 @@ jobs:
           done
 
       - name: Host - "Create release - tag - assets"
-        uses: ncipollo/release-action@bcfe5470707e8832e12347755757cec0eb3c22af # v1
+        uses: ncipollo/release-action@bcfe5470707e8832e12347755757cec0eb3c22af # v1.18.0
         with:
           prerelease: false
           artifacts: releases/*.xz
