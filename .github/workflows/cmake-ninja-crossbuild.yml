@@ -87,35 +87,35 @@ jobs:
         run: git clone --single-branch --branch ${cmake_github_tag} --shallow-submodules --recurse-submodules --depth 1 https://github.com/Kitware/CMake.git cmake
 
       - name: Docker - Configure cmake
-        run: docker exec -u github:github -w /home/gh/cmake ${container_name} ./configure --parallel=$(nproc) --no-system-libs --enable-ccache --prefix=/home/gh/build
+        run: docker exec -w /home/gh/cmake ${container_name} ./configure --parallel=$(nproc) --no-system-libs --enable-ccache --prefix=/home/gh/build
 
       - name: Docker - Make build cmake
-        run: docker exec -u github:github -w /home/gh/cmake ${container_name} make -j $(nproc)
+        run: docker exec -w /home/gh/cmake ${container_name} make -j $(nproc)
 
       - name: Docker - Make install cmake
-        run: docker exec -u github:github -w /home/gh/cmake ${container_name} make install
+        run: docker exec -w /home/gh/cmake ${container_name} make install
 
       - name: Host - Git clone ninja
         run: git clone --single-branch --branch ${ninja_github_tag} --shallow-submodules --recurse-submodules --depth 1 https://github.com/ninja-build/ninja.git ninja
 
       - name: Docker - Configure ninja
         run: >
-          docker exec -u github:github -w /home/gh/ninja ${container_name} /home/gh/build/bin/cmake -B build
+          docker exec -w /home/gh/ninja ${container_name} /home/gh/build/bin/cmake -B build
           -D CMAKE_BUILD_TYPE="release"
           -D CMAKE_CXX_STANDARD="${cxx_standard}"
           -D CMAKE_INSTALL_PREFIX="/home/gh/build"
           -D BUILD_TESTING=off
 
       - name: Docker - Build ninja
-        run: docker exec -u github:github -w /home/gh/ninja ${container_name} /home/gh/build/bin/cmake --build build -j"$(nproc)"
+        run: docker exec -w /home/gh/ninja ${container_name} /home/gh/build/bin/cmake --build build -j"$(nproc)"
 
       - name: Docker - Install ninja
-        run: docker exec -u github:github -w /home/gh/ninja ${container_name} /home/gh/build/bin/cmake --install build
+        run: docker exec -w /home/gh/ninja ${container_name} /home/gh/build/bin/cmake --install build
 
       - name: Docker - Test cmake and ninja binaries and set versions
         run: |
-          docker exec -u github:github -w /home/gh ${container_name} bash -c '/home/gh/build/bin/cmake --version 2> /dev/null | awk "NR==1{print \$3}" > cmake.version'
-          docker exec -u github:github -w /home/gh ${container_name} bash -c '/home/gh/build/bin/ninja --version 2> /dev/null > ninja.version'
+          docker exec -w /home/gh ${container_name} bash -c '/home/gh/build/bin/cmake --version 2> /dev/null | awk "NR==1{print \$3}" > cmake.version'
+          docker exec -w /home/gh ${container_name} bash -c '/home/gh/build/bin/ninja --version 2> /dev/null > ninja.version'
 
       - name: Host - Set cmake and ninja versions to variable
         id: version_info
