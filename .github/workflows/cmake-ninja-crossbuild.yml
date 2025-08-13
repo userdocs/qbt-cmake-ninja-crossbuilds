@@ -30,7 +30,7 @@ jobs:
       matrix:
         name: [cmake]
         os_id: [debian, ubuntu]
-        os_codename: [bullseye, bookworm, focal, jammy, noble]
+        os_codename: [bullseye, bookworm, trixie, focal, jammy, noble]
         arch: [amd64, armhf, arm64]
         exclude:
           - os_id: debian
@@ -43,6 +43,8 @@ jobs:
             os_codename: bullseye
           - os_id: ubuntu
             os_codename: bookworm
+          - os_id: ubuntu
+            os_codename: trixie
 
     name: ${{ matrix.os_id }}:${{ matrix.os_codename }} ${{ matrix.name }} ${{ matrix.arch }}
 
@@ -50,6 +52,7 @@ jobs:
       opt_dir_name: "opt/local"
       cxx_standard: "17"
       GH_TOKEN: "${{ github.token }}"
+      container_name: "builder"
 
     permissions:
       contents: read
@@ -59,11 +62,23 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Host - set up qemu-user-static binfmt-support
-        run: sudo apt install libpipeline1 qemu-user-static binfmt-support
+      - name: Host - Bootstrap qemu
+        uses: userdocs/actions/qemu@e74d179578ddcf1cd07cd9eefd0915f33a3bd600 # v1.0.1
 
-      - name: Host - Create docker multiarch ${{ matrix.arch }} container
-        run: docker run --name multiarch -it -d -w /home/github -v ${{ github.workspace }}:/home/github ghcr.io/userdocs/dcb:${{ matrix.os_id }}-${{ matrix.os_codename }}-${{ matrix.arch }}
+      - uses: userdocs/actions/qbt_docker@e74d179578ddcf1cd07cd9eefd0915f33a3bd600 # v1.0.1
+        with:
+            # if the env.custom file exists, it will be used to pass environment
+            distinct_id: ""
+            use_host_env: "false"
+            container_name: ${{ env.container_name }}
+            os_id: ghcr.io/userdocs/dcb
+            os_version_id: ${{ matrix.os_id }}-${{ matrix.os_codename }}-${{ matrix.arch }}
+            custom_docker_commands: ""
+            additional_alpine_apps: "bash curl git"
+            additional_debian_apps: "bash curl git"
+
+      - name: Host - Create docker ${{ env.container_name }} ${{ matrix.arch }} container
+        run: docker run --name ${container_name} -it -d -w /home/gh -v ${{ github.workspace }}:/home/gh ghcr.io/userdocs/dcb:${{ matrix.os_id }}-${{ matrix.os_codename }}-${{ matrix.arch }}
 
       - name: Host - cmake set cmake_github_tag
         run: printf '%s\n' "cmake_github_tag=$(git ls-remote -q -t --refs https://github.com/Kitware/CMake.git | awk '{sub("refs/tags/", "");sub("(.*)-rc(.*)", ""); print $2 }' | awk '!/^$/' | sort -rV | head -n 1)" >> $GITHUB_ENV
@@ -75,35 +90,35 @@ jobs:
         run: git clone --single-branch --branch ${cmake_github_tag} --shallow-submodules --recurse-submodules --depth 1 https://github.com/Kitware/CMake.git cmake
 
       - name: Docker - Configure cmake
-        run: docker exec -u github:github -w /home/github/cmake multiarch ./configure --parallel=$(nproc) --no-system-libs --enable-ccache --prefix=/home/github/build
+        run: docker exec -u github:github -w /home/gh/cmake ${container_name} ./configure --parallel=$(nproc) --no-system-libs --enable-ccache --prefix=/home/gh/build
 
       - name: Docker - Make build cmake
-        run: docker exec -u github:github -w /home/github/cmake multiarch make -j $(nproc)
+        run: docker exec -u github:github -w /home/gh/cmake ${container_name} make -j $(nproc)
 
       - name: Docker - Make install cmake
-        run: docker exec -u github:github -w /home/github/cmake multiarch make install
+        run: docker exec -u github:github -w /home/gh/cmake ${container_name} make install
 
       - name: Host - Git clone ninja
         run: git clone --single-branch --branch ${ninja_github_tag} --shallow-submodules --recurse-submodules --depth 1 https://github.com/ninja-build/ninja.git ninja
 
       - name: Docker - Configure ninja
         run: >
-          docker exec -u github:github -w /home/github/ninja multiarch /home/github/build/bin/cmake -B build
+          docker exec -u github:github -w /home/gh/ninja ${container_name} /home/gh/build/bin/cmake -B build
           -D CMAKE_BUILD_TYPE="release"
           -D CMAKE_CXX_STANDARD="${cxx_standard}"
-          -D CMAKE_INSTALL_PREFIX="/home/github/build"
+          -D CMAKE_INSTALL_PREFIX="/home/gh/build"
           -D BUILD_TESTING=off
 
       - name: Docker - Build ninja
-        run: docker exec -u github:github -w /home/github/ninja multiarch /home/github/build/bin/cmake --build build -j"$(nproc)"
+        run: docker exec -u github:github -w /home/gh/ninja ${container_name} /home/gh/build/bin/cmake --build build -j"$(nproc)"
 
       - name: Docker - Install ninja
-        run: docker exec -u github:github -w /home/github/ninja multiarch /home/github/build/bin/cmake --install build
+        run: docker exec -u github:github -w /home/gh/ninja ${container_name} /home/gh/build/bin/cmake --install build
 
       - name: Docker - Test cmake and ninja binaries and set versions
         run: |
-          docker exec -u github:github -w /home/github multiarch bash -c '/home/github/build/bin/cmake --version 2> /dev/null | awk "NR==1{print \$3}" > cmake.version'
-          docker exec -u github:github -w /home/github multiarch bash -c '/home/github/build/bin/ninja --version 2> /dev/null > ninja.version'
+          docker exec -u github:github -w /home/gh ${container_name} bash -c '/home/gh/build/bin/cmake --version 2> /dev/null | awk "NR==1{print \$3}" > cmake.version'
+          docker exec -u github:github -w /home/gh ${container_name} bash -c '/home/gh/build/bin/ninja --version 2> /dev/null > ninja.version'
 
       - name: Host - Set cmake and ninja versions to variable
         id: version_info
