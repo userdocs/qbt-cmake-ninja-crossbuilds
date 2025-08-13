@@ -77,9 +77,6 @@ jobs:
             additional_alpine_apps: "bash curl git"
             additional_debian_apps: "bash curl git"
 
-      - name: Host - Create docker ${{ env.container_name }} ${{ matrix.arch }} container
-        run: docker run --name ${container_name} -it -d -w /home/gh -v ${{ github.workspace }}:/home/gh ghcr.io/userdocs/dcb:${{ matrix.os_id }}-${{ matrix.os_codename }}-${{ matrix.arch }}
-
       - name: Host - cmake set cmake_github_tag
         run: printf '%s\n' "cmake_github_tag=$(git ls-remote -q -t --refs https://github.com/Kitware/CMake.git | awk '{sub("refs/tags/", "");sub("(.*)-rc(.*)", ""); print $2 }' | awk '!/^$/' | sort -rV | head -n 1)" >> $GITHUB_ENV
 
